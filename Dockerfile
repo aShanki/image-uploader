@@ -18,7 +18,7 @@ RUN npm run build
 RUN mkdir -p uploads
 
 # Expose port
-EXPOSE 3000
+EXPOSE 4001
 
 # Start the application
 CMD ["npm", "start"]
