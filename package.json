@@ -1,0 +1,17 @@
+{
+  "name": "image-uploader",
+  "version": "1.0.0",
+  "description": "Imgur-style image hosting application",
+  "scripts": {
+    "start": "docker-compose up",
+    "build": "docker-compose build",
+    "dev": "concurrently \"cd backend && go run main.go\" \"cd frontend && npm run dev\"",
+    "test": "cd frontend && npm run test",
+    "test:e2e": "cd frontend && npm run test:e2e",
+    "clean": "docker-compose down -v",
+    "format": "cd frontend && npm run format"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
