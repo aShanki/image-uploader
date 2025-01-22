@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { Image } from "@/models/Image"
@@ -8,20 +8,22 @@ import { UPLOAD_DIR } from "@/lib/upload"
 import { Types } from "mongoose"
 import connectDB from "@/lib/mongodb"
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const id = request.url.split('/').pop()
+    if (!id) {
+      return NextResponse.json({ error: "Missing ID" }, { status: 400 })
+    }
+
     await connectDB()
 
     const image = await Image.findOne({
-      _id: new Types.ObjectId(params.id),
+      _id: new Types.ObjectId(id),
       uploadedBy: session.user.id,
     })
 

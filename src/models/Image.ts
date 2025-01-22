@@ -64,6 +64,4 @@ imageSchema.virtual('deleteUrl').get(function() {
 });
 
 // Only create the model if it doesn't exist
-const Image = mongoose.models.Image || mongoose.model<IImage>('Image', imageSchema);
-
-export default Image;
+export const Image = mongoose.models.Image || mongoose.model<IImage>('Image', imageSchema);

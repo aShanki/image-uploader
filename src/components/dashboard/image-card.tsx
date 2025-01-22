@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState } from "react"
 import { formatDistance } from "date-fns"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export function ImageCard({ image, onDelete, onCopyUrl }: ImageCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -29,7 +29,7 @@ export function ImageCard({ image, onDelete, onCopyUrl }: ImageCardProps) {
         title: "Image deleted",
         description: "The image has been removed successfully",
       })
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",

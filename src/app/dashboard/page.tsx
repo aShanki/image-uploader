@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { ImageCard } from "@/components/dashboard/image-card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { ImageItem, ImagesResponse } from "@/types/dashboard"
 import {
   Pagination,
@@ -39,7 +39,7 @@ export default function DashboardPage() {
     fetchImages(page, search)
   }, [page, search])
 
-  const fetchImages = async (page: number, search: string) => {
+  const fetchImages = useCallback(async (page: number, search: string) => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams({
@@ -63,7 +63,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [toast, pagination.limit, setIsLoading, setImages, setPagination])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

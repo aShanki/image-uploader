@@ -31,6 +31,4 @@ const userSchema = new mongoose.Schema<IUser>(
 );
 
 // Only create the model if it doesn't exist
-const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
-
-export default User;
+export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
