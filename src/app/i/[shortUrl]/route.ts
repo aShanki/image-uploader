@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { Image } from "@/models/Image"
 import { join } from "path"
 import { createReadStream } from "fs"
@@ -7,14 +7,14 @@ import connectDB from "@/lib/mongodb"
 import { UPLOAD_DIR } from "@/lib/upload"
 
 export async function GET(
-  request: Request,
-  { params }: { params: { shortUrl: string } }
+  _request: NextRequest,
+  context: { params: { shortUrl: string } }
 ) {
   try {
     await connectDB()
 
     // Find image by shortUrl
-    const image = await Image.findOne({ shortUrl: params.shortUrl })
+    const image = await Image.findOne({ shortUrl: context.params.shortUrl })
     if (!image) {
       return NextResponse.json({ error: "Image not found" }, { status: 404 })
     }

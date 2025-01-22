@@ -1,16 +1,16 @@
 import { ErrorPage } from './error-page'
+import { Metadata } from "next";
 
-interface SearchParams {
-  error?: string
+export const metadata: Metadata = {
+  title: "Error",
+  description: "Authentication error occurred",
+};
+
+interface PageSearchParams {
+  error?: string;
 }
 
-interface Props {
-  params: Record<string, string>
-  searchParams: SearchParams
-}
-
-// @ts-expect-error Async Server Component typing issues
-export default async function AuthErrorPage({ searchParams }: Props) {
+export default function Page({ searchParams }: { searchParams: PageSearchParams }) {
   return (
     <div className="container py-6">
       <ErrorPage searchParams={searchParams} />

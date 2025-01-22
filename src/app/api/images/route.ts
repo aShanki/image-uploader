@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { Image } from "@/models/Image"
 import { Types } from "mongoose"
 import connectDB from "@/lib/mongodb"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 interface ImageQuery {
   uploadedBy: Types.ObjectId;
@@ -50,9 +50,8 @@ export async function GET(request: Request) {
       Image.countDocuments(query),
     ])
 
-    // Transform the data for the client
-    const transformedImages = images.map(image => ({
-      id: image._id.toString(),
+    const transformedImages = images.map((image) => ({
+      id: image._id?.toString() || '',
       filename: image.filename,
       originalName: image.originalName,
       shortUrl: image.shortUrl,
