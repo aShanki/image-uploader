@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"time"
 
@@ -48,7 +48,7 @@ func main() {
 
 	// CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000", "https://images.ashank.tech"},
+		AllowedOrigins: []string{"http://localhost:4001", "https://images.ashank.tech"},
 		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
@@ -122,12 +122,15 @@ func listImagesHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
+			ext := path.Ext(file.Name())
+			id := strings.TrimSuffix(file.Name(), ext)
+
 			images = append(images, ImageMetadata{
-				ID:        strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())),
+				ID:        id,
 				Filename:  file.Name(),
-				Size:     info.Size(),
+				Size:      info.Size(),
 				CreatedAt: info.ModTime(),
-				URL:      fmt.Sprintf("/images/%s", file.Name()),
+				URL:       fmt.Sprintf("/images/%s", file.Name()),
 			})
 		}
 	}
@@ -139,7 +142,7 @@ func listImagesHandler(w http.ResponseWriter, r *http.Request) {
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// 32MB max size
 	r.ParseMultipartForm(32 << 20)
-	
+
 	file, header, err := r.FormFile("image")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -166,7 +169,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create unique filename
 	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
-	filepath := filepath.Join(uploadPath, filename)
+	filepath := path.Join(uploadPath, filename)
 
 	// Create new file
 	dst, err := os.Create(filepath)
@@ -190,8 +193,10 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return metadata
+	ext := path.Ext(filename)
+	id := strings.TrimSuffix(filename, ext)
 	metadata := ImageMetadata{
-		ID:        strings.TrimSuffix(filename, filepath.Ext(filename)),
+		ID:        id,
 		Filename:  filename,
 		Size:      fileInfo.Size(),
 		CreatedAt: fileInfo.ModTime(),
@@ -214,8 +219,10 @@ func deleteImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, file := range files {
-		if strings.HasPrefix(file.Name(), id) {
-			err := os.Remove(filepath.Join(uploadPath, file.Name()))
+		ext := path.Ext(file.Name())
+		currentID := strings.TrimSuffix(file.Name(), ext)
+		if currentID == id {
+			err := os.Remove(path.Join(uploadPath, file.Name()))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

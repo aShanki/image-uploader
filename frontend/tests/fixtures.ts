@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test'
+import { test as base, Page } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
 
@@ -24,26 +24,44 @@ const setupTestImages = () => {
   }
 }
 
+type TestFixtures = {
+  autoTestImages: void;
+  authenticatedPage: Page;
+}
+
 // Extend the base test with our custom fixtures
-export const test = base.extend({
+export const test = base.extend<TestFixtures>({
   // Setup test images before all tests
   autoTestImages: [async ({}, use) => {
     setupTestImages()
     await use()
-  }, { scope: 'worker' }],
+  }, { scope: 'test', auto: true }],
 
   // Add authenticated page fixture
   authenticatedPage: async ({ page }, use) => {
-    await page.goto('/login')
-    await page.getByLabel('Username').fill(process.env.AUTH_USERNAME || 'admin')
-    await page.getByLabel('Password').fill(process.env.AUTH_PASSWORD || 'secure_password_here')
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    await page.waitForURL('/')
+    // Set auth cookie
+    await page.context().addCookies([
+      {
+        name: 'auth',
+        value: 'true',
+        domain: 'localhost',
+        path: '/'
+      }
+    ])
+
+    // Mock sessionStorage
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('isLoggedIn', 'true')
+    })
+
+    await page.goto('/')
     await use(page)
   }
 })
 
 // Helper function to get test image paths
-export const getTestImagePath = (index: number = 0) => {
+export const getTestImagePath = (index = 0): string => {
   return path.join(__dirname, 'fixtures', `test${index}.png`)
 }
+
+export { expect } from '@playwright/test'

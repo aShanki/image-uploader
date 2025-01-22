@@ -1,6 +1,7 @@
 import { execSync } from 'child_process'
 import { resolve } from 'path'
 import fs from 'fs'
+import type { TestResult } from '@playwright/test/reporter'
 
 // Test patterns to ensure coverage
 const TEST_PATTERNS = [
@@ -22,6 +23,14 @@ TEST_PATTERNS.forEach(pattern => {
     throw new Error(`No test files found matching pattern: ${pattern}`)
   }
 })
+
+interface TestSuite {
+  specs: Array<{ title: string }>
+}
+
+interface TestResults {
+  suites: TestSuite[]
+}
 
 // Run tests in sequence
 async function runTests() {
@@ -53,7 +62,7 @@ async function runTests() {
     // Verify critical path coverage
     const results = JSON.parse(
       fs.readFileSync('test-results/test-results.json', 'utf-8')
-    )
+    ) as TestResults
 
     const criticalPaths = [
       'login', 
@@ -66,8 +75,8 @@ async function runTests() {
 
     const coveredPaths = new Set(
       results.suites
-        .flatMap(s => s.specs)
-        .map(s => s.title.toLowerCase())
+        .flatMap(suite => suite.specs)
+        .map(spec => spec.title.toLowerCase())
     )
 
     const missingPaths = criticalPaths.filter(

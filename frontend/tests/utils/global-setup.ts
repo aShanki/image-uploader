@@ -1,73 +1,49 @@
-import { chromium, FullConfig } from '@playwright/test'
-import path from 'path'
-import fs from 'fs'
+import { FullConfig } from '@playwright/test'
 import dotenv from 'dotenv'
-
-// Load environment variables
-dotenv.config({ path: '.env.local' })
+import fs from 'fs'
+import path from 'path'
 
 async function globalSetup(config: FullConfig) {
-  const { baseURL, storageState } = config.projects[0].use
-  
-  // Skip if no storage state is configured
-  if (!storageState) return
+  // Load environment variables
+  dotenv.config({ path: '.env.local' })
 
-  // Ensure storage directory exists
-  const storageDir = path.dirname(storageState as string)
-  if (!fs.existsSync(storageDir)) {
-    fs.mkdirSync(storageDir, { recursive: true })
-  }
+  // Create test directories if they don't exist
+  const testDirs = [
+    path.join(__dirname, '../fixtures'),
+    path.join(__dirname, '../../test-results'),
+    path.join(__dirname, '../../playwright-report'),
+  ]
 
-  // Create test image fixtures directory
-  const fixturesDir = path.join(__dirname, '../fixtures')
-  if (!fs.existsSync(fixturesDir)) {
-    fs.mkdirSync(fixturesDir, { recursive: true })
-  }
-
-  // Launch browser
-  const browser = await chromium.launch()
-  const context = await browser.newContext()
-  const page = await context.newPage()
-
-  // Authenticate
-  if (baseURL) {
-    // Go to login page
-    await page.goto(`${baseURL}/login`)
-
-    // Fill login form
-    await page.getByLabel('Username').fill(
-      process.env.TEST_USERNAME || 'admin'
-    )
-    await page.getByLabel('Password').fill(
-      process.env.TEST_PASSWORD || 'secure_password_here'
-    )
-
-    // Submit form
-    await page.getByRole('button', { name: 'Sign in' }).click()
-
-    // Wait for navigation
-    await page.waitForURL(`${baseURL}/`)
-
-    // Create test images
-    const testImage = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-      'base64'
-    )
-
-    // Save test images
-    for (let i = 0; i < 3; i++) {
-      fs.writeFileSync(
-        path.join(fixturesDir, `test${i}.png`),
-        testImage
-      )
+  testDirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
     }
+  })
 
-    // Save authentication state
-    await context.storageState({ path: storageState as string })
+  // Create test environment if needed
+  const envPath = path.join(process.cwd(), '.env.test')
+  if (!fs.existsSync(envPath)) {
+    const testEnv = `
+      NEXT_PUBLIC_API_URL=http://localhost:4001
+      AUTH_USERNAME=admin
+      AUTH_PASSWORD=secure_password_here
+    `.trim()
+    fs.writeFileSync(envPath, testEnv)
   }
 
-  // Close browser
-  await browser.close()
+  // Create dummy test images
+  const testImage = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  )
+
+  const fixturesDir = path.join(__dirname, '../fixtures')
+  for (let i = 0; i < 3; i++) {
+    const filePath = path.join(fixturesDir, `test${i}.png`)
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, testImage)
+    }
+  }
 }
 
 export default globalSetup

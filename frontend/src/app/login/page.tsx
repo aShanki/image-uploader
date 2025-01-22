@@ -1,18 +1,33 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { FormEvent, useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import Cookies from 'js-cookie'
 
 export default function LoginPage() {
-  async function login(formData: FormData) {
-    'use server'
+  const router = useRouter()
+  const { login } = useAuth()
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
     
+    const formData = new FormData(e.currentTarget)
     const username = formData.get('username')
     const password = formData.get('password')
-    
-    if (username === process.env.AUTH_USERNAME && 
-        password === process.env.AUTH_PASSWORD) {
-      redirect('/')
+
+    if (username === process.env.NEXT_PUBLIC_AUTH_USERNAME && 
+        password === process.env.NEXT_PUBLIC_AUTH_PASSWORD) {
+      // Set auth cookie and login state
+      Cookies.set('auth', 'true', { expires: 7 })
+      login()
+      router.push('/')
+      router.refresh()
+    } else {
+      setError('Invalid credentials')
     }
-    
-    return { error: 'Invalid credentials' }
   }
 
   return (
@@ -23,7 +38,7 @@ export default function LoginPage() {
             Sign in to Image Uploader
           </h2>
         </div>
-        <form action={login} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="username" className="sr-only">
@@ -52,6 +67,12 @@ export default function LoginPage() {
               />
             </div>
           </div>
+
+          {error && (
+            <div className="text-red-500 text-sm text-center" role="alert">
+              {error}
+            </div>
+          )}
 
           <div>
             <button
