@@ -2,20 +2,14 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    domains: ['localhost', 'images.ashank.tech'],
+    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'backend',
+        hostname: 'localhost',
         port: '4001',
         pathname: '/images/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.ashank.tech',
-        port: '',
-        pathname: '/images/**',
-      },
+      }
     ],
   },
   typescript: {
@@ -28,11 +22,11 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: 'http://localhost:4001/api/:path*',
       },
       {
         source: '/images/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/images/:path*`,
+        destination: 'http://localhost:4001/images/:path*',
       },
     ]
   },
@@ -44,6 +38,7 @@ const nextConfig = {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   swcMinify: true,
+  experimental: {
+    optimizeCss: true
+  }
 }
-
-export default nextConfig

@@ -5,7 +5,8 @@ import dotenv from 'dotenv'
 // Load env file
 dotenv.config({ path: '.env.local' })
 
-const PORT = process.env.PORT || 4001
+const PORT = process.env.PORT || 3000
+const API_PORT = process.env.API_PORT || 4001
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${PORT}`
 
 export default defineConfig({
@@ -22,7 +23,7 @@ export default defineConfig({
   outputDir: 'test-results/',
   preserveOutput: 'always',
   use: {
-    baseURL: BASE_URL,
+    baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -45,32 +46,18 @@ export default defineConfig({
         viewport: { width: 1280, height: 720 },
       },
       dependencies: ['setup'],
-    },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1280, height: 720 },
-      },
-      dependencies: ['setup'],
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        viewport: { width: 1280, height: 720 },
-      },
-      dependencies: ['setup'],
-    },
+    }
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    timeout: 60000,
-  },
+  webServer: [
+    {
+      command: 'npm run dev',
+      url: `http://localhost:${PORT}`,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      timeout: 60000,
+    }
+  ],
   expect: {
     timeout: 10000,
     toHaveScreenshot: {

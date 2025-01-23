@@ -24,11 +24,16 @@ TEST_PATTERNS.forEach(pattern => {
   }
 })
 
-interface TestSuite {
-  specs: Array<{ title: string }>
+interface TestSpec {
+  title: string
+  ok: boolean
 }
 
-interface TestResults {
+interface TestSuite {
+  specs: TestSpec[]
+}
+
+interface JsonResults {
   suites: TestSuite[]
 }
 
@@ -62,7 +67,7 @@ async function runTests() {
     // Verify critical path coverage
     const results = JSON.parse(
       fs.readFileSync('test-results/test-results.json', 'utf-8')
-    ) as TestResults
+    ) as JsonResults
 
     const criticalPaths = [
       'login', 
@@ -79,8 +84,8 @@ async function runTests() {
         .map(spec => spec.title.toLowerCase())
     )
 
-    const missingPaths = criticalPaths.filter(
-      path => ![...coveredPaths].some(title => title.includes(path))
+    const missingPaths = criticalPaths.filter(path => 
+      !Array.from(coveredPaths).some(title => title.includes(path))
     )
 
     if (missingPaths.length > 0) {
